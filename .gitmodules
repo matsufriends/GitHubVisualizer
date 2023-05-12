@@ -1,0 +1,3 @@
+[submodule "prj/Assets/MornLib"]
+	path = prj/Assets/MornLib
+	url = https://github.com/matsufriends/MornLib.git
