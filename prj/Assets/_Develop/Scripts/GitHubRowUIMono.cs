@@ -43,12 +43,14 @@ public sealed class GitHubRowUIMono : MonoBehaviour
 
     public void SetRank(int rank, float maxValue)
     {
-        if (IsActive == false)
+        var cachedIsActive = IsActive;
+        IsActive = Value > 0;
+        if (cachedIsActive == false && IsActive)
         {
             UpdatePos(_lastRank + FadeOutRankDif, false);
+            _canvasGroup.alpha = 0;
         }
 
-        IsActive = Value > 0;
         if (IsActive)
         {
             _displayRank = rank;
@@ -56,7 +58,7 @@ public sealed class GitHubRowUIMono : MonoBehaviour
         }
         else
         {
-            _displayRank = _lastRank = FadeOutRankDif;
+            _displayRank = _lastRank + FadeOutRankDif;
         }
 
         _slider.value = Value / maxValue;
