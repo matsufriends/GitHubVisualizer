@@ -4,25 +4,23 @@ using UnityEngine.UI;
 
 public sealed class GitHubRowUIMono : MonoBehaviour
 {
+    [SerializeField] private CanvasGroup _canvasGroup;
     [SerializeField] private RectTransform _rect;
     [SerializeField] private Image _image;
     [SerializeField] private TextMeshProUGUI _labelText;
     [SerializeField] private TextMeshProUGUI _valueText;
     [SerializeField] private Slider _slider;
+    private int _displayRank;
+    private int _lastRank;
     private const float Offset = -10;
-    private const float Height = 40;
-    private const float Space = 10;
-    private const int SpawnRank = 12;
-    private int _rank = SpawnRank;
+    public const float Height = 40;
+    public const float Space = 10;
+    private const int FadeOutRankDif = 2;
+    private const float MoveSpeed = 20;
+    private const float FadeSpeed = 15;
+    public bool IsActive { get; private set; }
     public string Key { get; private set; }
     public float Value { get; private set; }
-
-    private void Awake()
-    {
-        var pos = _rect.anchoredPosition;
-        pos.y = CalcAimY();
-        _rect.anchoredPosition = pos;
-    }
 
     public void SetIcon(Texture2D texture)
     {
@@ -45,19 +43,36 @@ public sealed class GitHubRowUIMono : MonoBehaviour
 
     public void SetRank(int rank, float maxValue)
     {
-        _rank = Value == 0 ? SpawnRank : rank;
+        if (IsActive == false)
+        {
+            UpdatePos(_lastRank + FadeOutRankDif, false);
+        }
+
+        IsActive = Value > 0;
+        if (IsActive)
+        {
+            _displayRank = rank;
+            _lastRank = _displayRank;
+        }
+        else
+        {
+            _displayRank = _lastRank = FadeOutRankDif;
+        }
+
         _slider.value = Value / maxValue;
     }
 
     private void Update()
     {
-        var pos = _rect.anchoredPosition;
-        pos.y = Mathf.Lerp(pos.y, CalcAimY(), Time.deltaTime * 50);
-        _rect.anchoredPosition = pos;
+        UpdatePos(_displayRank);
+        _canvasGroup.alpha = Mathf.Lerp(_canvasGroup.alpha, IsActive ? 1 : 0, Time.deltaTime * FadeSpeed);
     }
 
-    private float CalcAimY()
+    private void UpdatePos(int rank, bool useLerp = true)
     {
-        return Offset - (_rank - 1) * (Height + Space);
+        var pos = _rect.anchoredPosition;
+        var t = useLerp ? Time.deltaTime * MoveSpeed : 1;
+        pos.y = Mathf.Lerp(pos.y, Offset - (rank - 1) * (Height + Space), t);
+        _rect.anchoredPosition = pos;
     }
 }

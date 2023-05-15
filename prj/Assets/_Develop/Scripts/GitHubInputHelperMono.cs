@@ -6,27 +6,43 @@ using UnityEngine.UI;
 public sealed class GitHubInputHelperMono : MonoBehaviour
 {
     [SerializeField] private TMP_InputField _ownerName;
-    [SerializeField] private TMP_InputField _repoName;
+    [SerializeField] private TMP_Dropdown _dropDown;
     [SerializeField] private TMP_InputField _clientId;
     [SerializeField] private TMP_InputField _clientSecret;
-    [SerializeField] private Toggle _useOAuth;
     [SerializeField] private Button _loadButton;
 
     private void Awake()
     {
         _ownerName.text = PlayerPrefs.GetString(nameof(_ownerName), "");
-        _repoName.text = PlayerPrefs.GetString(nameof(_repoName), "");
+        var optionCount = PlayerPrefs.GetInt("OptionCount", 0);
+        _dropDown.ClearOptions();
+        for (var i = 0; i < optionCount; i++)
+        {
+            var optionData = new TMP_Dropdown.OptionData(PlayerPrefs.GetString($"Option{i}", "None"));
+            _dropDown.options.Add(optionData);
+        }
+
+        _dropDown.value = PlayerPrefs.GetInt(nameof(_dropDown), -1);
         _clientId.text = PlayerPrefs.GetString(nameof(_clientId), "");
         _clientSecret.text = PlayerPrefs.GetString(nameof(_clientSecret), "");
-        _useOAuth.isOn = PlayerPrefs.GetInt(nameof(_useOAuth), 0) == 1;
         _ownerName.onValueChanged.AddListener(x =>
         {
             PlayerPrefs.SetString(nameof(_ownerName), x);
             PlayerPrefs.Save();
+            _dropDown.ClearOptions();
+            _dropDown.value = -1;
         });
-        _repoName.onValueChanged.AddListener(x =>
+        _dropDown.onValueChanged.AddListener(x =>
         {
-            PlayerPrefs.SetString(nameof(_repoName), x);
+            PlayerPrefs.SetInt(nameof(_dropDown), x);
+            var options = _dropDown.options;
+            for (var i = 0; i < options.Count; i++)
+            {
+                var option = options[i];
+                PlayerPrefs.SetString($"Option{i}", option.text);
+            }
+
+            PlayerPrefs.SetInt("OptionCount", options.Count);
             PlayerPrefs.Save();
         });
         _clientId.onValueChanged.AddListener(x =>
@@ -39,11 +55,6 @@ public sealed class GitHubInputHelperMono : MonoBehaviour
             PlayerPrefs.SetString(nameof(_clientSecret), x);
             PlayerPrefs.Save();
         });
-        _useOAuth.onValueChanged.AddListener(x =>
-        {
-            PlayerPrefs.SetInt(nameof(_useOAuth), x ? 1 : 0);
-            PlayerPrefs.Save();
-        });
     }
 
     private void Update()
@@ -51,10 +62,6 @@ public sealed class GitHubInputHelperMono : MonoBehaviour
         if (Keyboard.current.tabKey.wasPressedThisFrame)
         {
             if (_ownerName.isFocused)
-            {
-                _repoName.ActivateInputField();
-            }
-            else if (_repoName.isFocused)
             {
                 _clientId.ActivateInputField();
             }
