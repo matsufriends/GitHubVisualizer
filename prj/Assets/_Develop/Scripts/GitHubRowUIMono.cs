@@ -5,10 +5,10 @@ using UnityEngine.UI;
 public sealed class GitHubRowUIMono : MonoBehaviour
 {
     [SerializeField] private RectTransform _rect;
+    [SerializeField] private Image _image;
     [SerializeField] private TextMeshProUGUI _labelText;
     [SerializeField] private TextMeshProUGUI _valueText;
     [SerializeField] private Slider _slider;
-    private const float MoveSpeed = 2000;
     private const float Offset = -10;
     private const float Height = 40;
     private const float Space = 10;
@@ -22,6 +22,17 @@ public sealed class GitHubRowUIMono : MonoBehaviour
         var pos = _rect.anchoredPosition;
         pos.y = CalcAimY();
         _rect.anchoredPosition = pos;
+    }
+
+    public void SetIcon(Texture2D texture)
+    {
+        if (texture == null)
+        {
+            return;
+        }
+
+        var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
+        _image.sprite = sprite;
     }
 
     public void SetData(string key, float value)
@@ -40,10 +51,8 @@ public sealed class GitHubRowUIMono : MonoBehaviour
 
     private void Update()
     {
-        var maxDif = MoveSpeed * Time.deltaTime;
         var pos = _rect.anchoredPosition;
-        var clampedDif = Mathf.Clamp(CalcAimY() - pos.y, -maxDif, maxDif);
-        pos.y += clampedDif;
+        pos.y = Mathf.Lerp(pos.y, CalcAimY(), Time.deltaTime * 50);
         _rect.anchoredPosition = pos;
     }
 

@@ -16,6 +16,7 @@ public sealed class GitHubManagerMono : MonoBehaviour
     [SerializeField] private TMP_InputField _ownerNameInputField;
     [SerializeField] private TMP_InputField _repoNameInputField;
     [SerializeField] private Button _loadButton;
+    [SerializeField] private Button _loadStopButton;
     [SerializeField] private TextMeshProUGUI _resultText;
     [SerializeField] private TMP_InputField _clientIdInputField;
     [SerializeField] private TMP_InputField _clientSecretInputField;
@@ -39,6 +40,7 @@ public sealed class GitHubManagerMono : MonoBehaviour
     private void Awake()
     {
         _loadButton.OnClickAsObservable().Subscribe(_ => OnLoadButtonAsync(gameObject.GetCancellationTokenOnDestroy()).Forget()).AddTo(this);
+        _loadStopButton.OnClickAsObservable().Subscribe(_ => GitHubCore.StopLoad()).AddTo(this);
         _playButton.OnClickAsObservable().Subscribe(_ => _isPlayingRP.Value = !_isPlayingRP.Value).AddTo(this);
         _isPlayingRP.Subscribe(x => _playText.text = x ? "Stop" : "Play").AddTo(this);
         _commitSlider.OnPointerDownAsObservable().Subscribe(_ => _isPlayingRP.Value = false).AddTo(this);
@@ -50,6 +52,12 @@ public sealed class GitHubManagerMono : MonoBehaviour
         Init();
     }
 
+    private static async UniTask LoadTextureAsync(CommitData commitData, GitHubRowUIMono row, CancellationToken token)
+    {
+        var texture = await GitHubCore.LoadIconAsync(commitData.author.avatar_url, token);
+        row.SetIcon(texture);
+    }
+
     private void DisplayByIndex(int index)
     {
         Assert.IsTrue(index < _commitDataList.Count);
@@ -58,6 +66,7 @@ public sealed class GitHubManagerMono : MonoBehaviour
         if (key != null && _rowDict.ContainsKey(key) == false)
         {
             var row = Instantiate(_rowPrefab, _contentsParent);
+            LoadTextureAsync(commitData, row, gameObject.GetCancellationTokenOnDestroy()).Forget();
             _rowDict.Add(key, row);
             _rowList.Add(row);
         }
@@ -83,6 +92,7 @@ public sealed class GitHubManagerMono : MonoBehaviour
         _commitSlider.minValue = 0;
         _commitSlider.maxValue = 0;
         _commitSlider.value = 0;
+        _loadStopButton.gameObject.SetActive(false);
         _rowDict.Clear();
         _rowList.Clear();
         _contentsParent.DestroyChildren();
@@ -140,21 +150,23 @@ public sealed class GitHubManagerMono : MonoBehaviour
     {
         Init();
         _resultText.text = "Now Loading...";
+        _loadStopButton.gameObject.SetActive(true);
         var owner = _ownerNameInputField.text;
         var repo = _repoNameInputField.text;
         var clientId = _clientIdInputField.text;
         var clientSecret = _clientSecretInputField.text;
         if (_useOAuthToggle.isOn)
         {
-            _commitDataList = await GitHubCore.LoadTask(owner, repo, clientId, clientSecret, token);
+            _commitDataList = await GitHubCore.LoadRepository(owner, repo, clientId, clientSecret, token);
         }
         else
         {
-            _commitDataList = await GitHubCore.LoadTask(owner, repo, token);
+            _commitDataList = await GitHubCore.LoadRepository(owner, repo, token);
         }
 
         token.ThrowIfCancellationRequested();
         _resultText.text = $"Loaded {_commitDataList.Count} commits";
+        _loadStopButton.gameObject.SetActive(false);
         _commitSlider.minValue = 0;
         _commitSlider.maxValue = _commitDataList.Count - 1;
         _controllerActivator.SetActive(_commitDataList.Count > 0);
