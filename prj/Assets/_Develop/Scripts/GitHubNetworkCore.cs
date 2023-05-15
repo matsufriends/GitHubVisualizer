@@ -61,17 +61,19 @@ public static class GitHubNetworkCore
         return origin;
     }
 
-    public static UniTask<List<RepositoryData>> LoadRepos(string ownerName, string clientId, string clientSecret, CancellationToken token)
+    public static async UniTask<List<RepositoryData>> LoadReposAsync(string ownerName, string clientId, string clientSecret, CancellationToken token)
     {
         var uri = $"https://api.github.com/users/{ownerName}/repos";
-        return LoadDataAsync<RepositoryData>(GitHubUtil.TryConvertRepos, uri, clientId, clientSecret, token);
+        return await LoadDataAsync<RepositoryData>(GitHubUtil.TryConvertRepos, uri, clientId, clientSecret, token);
     }
 
-    public static UniTask<List<CommitData>> LoadCommits(string ownerName, string repoName, string clientId, string clientSecret,
+    public static async UniTask<List<CommitData>> LoadCommitsAsync(string ownerName, string repoName, string clientId, string clientSecret,
         CancellationToken token)
     {
         var uri = $"https://api.github.com/repos/{ownerName}/{repoName}/commits";
-        return LoadDataAsync<CommitData>(GitHubUtil.TryConvertCommits, uri, clientId, clientSecret, token);
+        var list = await LoadDataAsync<CommitData>(GitHubUtil.TryConvertCommits, uri, clientId, clientSecret, token);
+        list.Reverse();
+        return list;
     }
 
     public static async UniTask<Texture2D> LoadIconAsync(string url, CancellationToken token)

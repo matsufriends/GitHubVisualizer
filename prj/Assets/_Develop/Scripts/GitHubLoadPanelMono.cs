@@ -35,7 +35,7 @@ public sealed class GitHubLoadPanelMono : MonoBehaviour
         var owner = _ownerNameInputField.text;
         var clientId = _clientIdInputField.text;
         var clientSecret = _clientSecretInputField.text;
-        var repoList = await GitHubNetworkCore.LoadRepos(owner, clientId, clientSecret, token);
+        var repoList = await GitHubNetworkCore.LoadReposAsync(owner, clientId, clientSecret, token);
         var optionList = repoList.Select(repo => new TMP_Dropdown.OptionData(repo.name)).ToList();
         _reposDropdown.options = optionList;
         _reposDropdown.value = optionList.Count > 0 ? 0 : -1;
@@ -52,6 +52,6 @@ public sealed class GitHubLoadPanelMono : MonoBehaviour
         var repo = _reposDropdown.options[_reposDropdown.value].text;
         var clientId = _clientIdInputField.text;
         var clientSecret = _clientSecretInputField.text;
-        _loadCommitDataListSubject.OnNext(await GitHubNetworkCore.LoadCommits(owner, repo, clientId, clientSecret, token));
+        _loadCommitDataListSubject.OnNext(await GitHubNetworkCore.LoadCommitsAsync(owner, repo, clientId, clientSecret, token));
     }
 }
