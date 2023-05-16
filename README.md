@@ -2,7 +2,7 @@
 GitHubのコミット数の遷移を棒グラフのランキング形式で可視化します。
 （研究室で「1週間で作れるのか？」と話題になり、挑戦しました。）
 
-WebGLでビルドしたものを下記に公開しています。
+WebGLでビルドしたものを下記に公開しています。  
 [サイトURL](https://matsufriends.github.io/GitHubVisualizer/)
 
 # 使用方法
