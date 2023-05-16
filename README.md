@@ -25,5 +25,7 @@ WebGLでビルドしたものを下記に公開しています。
 
 # プロジェクトについて
 - `Unity ver2021.3.6f1`
-- `UniRx` / `UniTask` / `MornLib`
-- 本リポジトリは`Unlicense`のため、ご自由に拡張頂けます。
+- [UniRx](https://github.com/neuecc/UniRx/blob/master/LICENSE)
+- [UniTask](https://github.com/Cysharp/UniTask/blob/master/LICENSE)
+- [WebGLInput](https://github.com/kou-yeung/WebGLInput/blob/master/LICENSE)
+- [MornLib](https://github.com/matsufriends/MornLib/blob/main/LICENSE)
